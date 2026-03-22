@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Check-In App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-sky-100 via-violet-100 to-emerald-100 p-6 text-slate-900">
+  <div class="mx-auto max-w-6xl">
+    <div class="rounded-3xl bg-white/80 p-6 shadow-2xl backdrop-blur">
+      <h1 class="text-4xl font-black">☀️ Daily Check-In App</h1>
+      <p class="mt-2 text-lg">Choose a check-in style that fits how you are arriving today.</p>
+    </div>
+
+    <div id="mode-grid" class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3"></div>
+    <div id="mode-detail" class="mt-6"></div>
+  </div>
+
+  <script>
+    const checkInModes = {
+
+      "Emotion": makeMode("🎭","from-pink-300 to-violet-300","border-pink-300","bg-pink-50",
+        "Pick one or two emotions.",["Calm","Anxious","Hopeful","Frustrated","Lonely","Overwhelmed","Numb","Excited"],
+        ["Which is strongest?","What’s underneath?","What would help?"]
+      ),
+
+      "Weather": makeMode("⛅","from-sky-300 to-blue-300","border-sky-300","bg-sky-50",
+        "Describe your internal weather.",["Sunny","Foggy","Stormy","Windy","Frozen","Clearing"],
+        ["Why this weather?","What could shift it?","What support fits?"]
+      ),
+
+      "Energy": makeMode("⚡","from-amber-300 to-orange-300","border-amber-300","bg-amber-50",
+        "Check your energy.",["Drained","Low","Steady","Restless","Energized"],
+        ["Does it match mood?","What affects it?","What helps?"]
+      ),
+
+      "Mind": makeMode("🧠","from-indigo-300 to-sky-300","border-indigo-300","bg-indigo-50",
+        "What is your mind doing?",["Focused","Racing","Foggy","Overloaded","Calm"],
+        ["What’s it stuck on?","What helps it settle?","What reduces noise?"]
+      ),
+
+      "Body": makeMode("🫀","from-rose-300 to-orange-200","border-rose-300","bg-rose-50",
+        "Start with body signals.",["Tense","Heavy","Restless","Numb","Grounded"],
+        ["Where do you feel it?","What is your body saying?","What would help?"]
+      ),
+
+      "Needs": makeMode("🌱","from-emerald-300 to-green-300","border-emerald-300","bg-emerald-50",
+        "What do you need today?",["Rest","Support","Clarity","Connection","Space"],
+        ["Can you ask for it?","What’s one small step?","What would support look like?"]
+      ),
+
+      "Social Battery": makeMode("🔋","from-purple-300 to-indigo-300","border-purple-300","bg-purple-50",
+        "How much people energy do you have?",["Drained","Low","Selective","Good","High"],
+        ["Do you need space or connection?","What drains it?","What protects it?"]
+      ),
+
+      "Thought Loop": makeMode("🔄","from-yellow-300 to-amber-300","border-yellow-300","bg-yellow-50",
+        "What is your mind looping on?",["Past","Future","People","Self","Nothing"],
+        ["Is it helpful?","Can you step back?","What interrupts it?"]
+      ),
+
+      "Self-Talk": makeMode("🗣️","from-slate-300 to-gray-200","border-slate-300","bg-slate-50",
+        "How has your inner voice been?",["Critical","Anxious","Neutral","Supportive"],
+        ["Would you say this to someone else?","Is it true?","Can you soften it?"]
+      ),
+
+      "Pattern": makeMode("🧩","from-green-200 to-teal-200","border-teal-300","bg-teal-50",
+        "What pattern showed up?",["Avoidance","Overthinking","People-pleasing","Shutting down"],
+        ["Did you notice sooner?","What triggered it?","What could shift it?"]
+      ),
+
+      "Mask": makeMode("🎭","from-fuchsia-200 to-pink-200","border-fuchsia-300","bg-fuchsia-50",
+        "What are you showing vs feeling?",["I’m fine (but not)","Holding it together","Avoiding honesty"],
+        ["What’s underneath?","What feels risky?","What would honesty look like?"]
+      ),
+
+      "Direction": makeMode("🧭","from-indigo-200 to-blue-200","border-indigo-300","bg-indigo-50",
+        "How do you feel about your direction?",["Lost","Stuck","Unsure","Moving forward","Hopeful"],
+        ["What’s one step?","What’s blocking you?","What helps movement?"]
+      ),
+
+      "Signal": makeMode("📡","from-orange-200 to-yellow-200","border-orange-300","bg-orange-50",
+        "What signal is strongest?",["Anxiety","Frustration","Sadness","Anger","Confusion"],
+        ["What is it pointing to?","Is it information not instruction?","What needs attention?"]
+      ),
+
+      "Parts": makeMode("🪞","from-gray-200 to-slate-200","border-gray-300","bg-gray-50",
+        "Different parts of us show up in different moments. No experience needed.",
+        [
+          "The Critic (judging)",
+          "The Avoider (checks out)",
+          "The Fixer (tries to solve everything)",
+          "The Exhausted Part (burnt out)",
+          "The Hopeful Part (wants change)"
+        ],
+        [
+          "Which part feels strongest today?",
+          "What is that part trying to do for you?",
+          "Is it helping or making things harder?",
+          "What would a more balanced part say?"
+        ]
+      ),
+
+      "Metaphor": makeMode("🎨","from-pink-200 to-yellow-200","border-pink-300","bg-pink-50",
+        "If today was a scene...",["Traffic jam","Climbing hill","Storm","Floating","Running in circles"],
+        ["Why that image?","What changes it?","Where are you in the scene?"]
+      ),
+
+      "Time": makeMode("⏳","from-slate-200 to-yellow-200","border-yellow-300","bg-yellow-50",
+        "Where is your mind spending time?",["Past","Future","Both","Present"],
+        ["What pulls you there?","What brings you back?","What helps you stay present?"]
+      )
+
+    };
+
+    const modeGrid = document.getElementById('mode-grid');
+    const modeDetail = document.getElementById('mode-detail');
+
+    Object.entries(checkInModes).forEach(([name, mode]) => {
+      const btn = document.createElement('button');
+      btn.className = `p-4 rounded-xl border-4 ${mode.border} bg-gradient-to-br ${mode.color} shadow-lg`;
+      btn.innerHTML = `<div class='text-xl font-bold'>${mode.icon} ${name}</div>`;
+      btn.onclick = () => renderMode(name, mode);
+      modeGrid.appendChild(btn);
+    });
+
+    function renderMode(name, mode) {
+      modeDetail.innerHTML = `
+        <div class="p-6 rounded-2xl border-4 ${mode.border} ${mode.bg}">
+          <h2 class="text-2xl font-bold">${mode.icon} ${name}</h2>
+          <p class="mt-2">${mode.description}</p>
+          ${list('Options', mode.options)}
+          ${list('Discussion', mode.prompts)}
+        </div>`;
+    }
+
+    function list(title, items){
+      return `<div class='mt-4'><strong>${title}</strong><ul class='ml-5 list-disc'>${items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+    }
+
+    function makeMode(icon,color,border,bg,description,options,prompts){
+      return {icon,color,border,bg,description,options,prompts};
+    }
+  </script>
+</body>
+</html>
